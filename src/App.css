@@ -145,3 +145,18 @@ section {
   transition: opacity 0.2s;
 }
 .btn-primary:hover { opacity: 0.9; }
+.characters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.character-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.1);
+}
