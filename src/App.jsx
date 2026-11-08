@@ -16,3 +16,15 @@ const mockData = {
     { Id: 3, Name: "Лиора", Class: "Мистик" }
   ]
 };
+const CharacterCard = ({ character }) => (
+  <div className="character-card">
+    {/* Заглушка для иконки (треугольник/круг/звезда) */}
+    <div className="char-icon-placeholder">
+      {character.Id === 1 ? '▲' : character.Id === 2 ? '⬤' : '✦'}
+    </div>
+    <div className="char-info">
+      <h4>{character.Name}</h4>
+      <p>{character.Class}</p>
+    </div>
+  </div>
+);
