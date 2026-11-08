@@ -199,3 +199,34 @@ section {
   transition: background 0.2s;
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+.theme-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.theme-btn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.theme-btn.active {
+  border-color: var(--accent-gold);
+  color: var(--text-main);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.logout-link {
+  display: block;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.logout-link:hover { color: var(--text-main); }
