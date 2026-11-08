@@ -108,3 +108,40 @@ h1, h2, h3, h4 { font-family: Georgia, serif; }
   grid-template-columns: 2fr 1fr;
   gap: 30px;
 }
+section {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 25px;
+  backdrop-filter: blur(8px);
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-header h3 { font-size: 18px; }
+
+/* Карточка "Продолжить приключение" */
+.continue-adventure h2 { font-size: 24px; margin: 10px 0; }
+.location { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+.description { font-size: 14px; line-height: 1.5; color: var(--text-muted); margin-bottom: 20px; }
+
+.action-row { display: flex; justify-content: space-between; align-items: center; }
+.health { font-size: 13px; color: var(--text-muted); }
+
+.btn-primary {
+  background: var(--accent-gold);
+  color: var(--btn-text);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; }
