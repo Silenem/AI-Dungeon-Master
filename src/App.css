@@ -44,4 +44,10 @@ body {
 .top-nav, .profile-page { position: relative; z-index: 1; }
 
 h1, h2, h3, h4 { font-family: Georgia, serif; }
-
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-color);
+}
