@@ -1,7 +1,3 @@
-// СТРАНИЦА 2: «Мои персонажи»   (маршрут: /characters)
-// CSS-файл: 2-MyCharacters.css
-// API: getCharacters(), startStory() из api.js
-// ============================================================
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CLASSES, STAT_LABELS, getCharacters, startStory } from "./api";
