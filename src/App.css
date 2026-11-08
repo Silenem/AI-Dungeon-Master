@@ -18,3 +18,19 @@
   --input-bg: rgba(255, 255, 255, 0.8);
   --btn-text: #fff;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-container {
+  min-height: 100vh;
+  position: relative;
+  color: var(--text-main);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: all 0.3s ease;
+}
+
