@@ -230,3 +230,10 @@ section {
   margin-top: 10px;
 }
 .logout-link:hover { color: var(--text-main); }
+.app-container.dark {
+  background-image: url('./images/dark_theme_background.jpg'); 
+}
+
+.app-container.light {
+  background-image: url('./images/light_theme_background.jpg');
+}
