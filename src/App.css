@@ -8,3 +8,13 @@
   --input-bg: rgba(0, 0, 0, 0.3);
   --btn-text: #111;
 }
+.app-container.light {
+  --bg-overlay: rgba(245, 240, 235, 0.85);
+  --text-main: #2d3748;
+  --text-muted: #718096;
+  --accent-gold: #b7791f;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --panel-bg: rgba(255, 255, 255, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --btn-text: #fff;
+}
