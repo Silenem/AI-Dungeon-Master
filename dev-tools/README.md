@@ -1,0 +1,1 @@
+Here you can find additional dev-tools, which allow you to test features without deployed project. They allow to talk with LLM by API or with locally-served LLM. In all in this tools you play as test-character with realtime-changable data. 
