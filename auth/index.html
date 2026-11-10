@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ИИ-Мастер — Ваш путь начинается здесь</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar__left">
+      <a href="#" class="logo">
+        <span class="logo__icon">✦</span>
+        <span class="logo__text">ИИ-Мастер</span>
+      </a>
+      <span class="navbar__divider">|</span>
+      <span class="navbar__tagline">Ваш путь начинается здесь</span>
+    </div>
+
+    <div class="navbar__right">
+      <button id="themeToggle" class="nav-btn" type="button">
+        <span id="themeIcon">☀️</span>
+        <span id="themeText">Светлая тема</span>
+      </button>
+      <button id="headerAuthBtn" class="nav-btn nav-btn--login" type="button">
+        <span>Войти</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="hero-stage">
+    <div class="ornate-frame">
+      <span class="corner corner--tl"></span>
+      <span class="corner corner--tr"></span>
+      <span class="corner corner--bl"></span>
+      <span class="corner corner--br"></span>
+
+      <div class="hero-grid">
+        <section class="hero-info">
+          <p class="hero-info__eyebrow">AI DUNGEON MASTER</p>
+          <h1 class="hero-info__title">
+            У каждой истории<br />есть первый шаг.
+          </h1>
+          <p class="hero-info__subtitle">
+            Создайте героя. Войдите в приключение.<br />
+            Решите, чем оно закончится.
+          </p>
+          <hr class="hero-info__line" />
+          <p class="hero-info__quote">
+            Мастер задаёт мир.<br />
+            Вы выбираете свой путь.
+          </p>
+        </section>
+
+        <section class="auth-card" id="authCard">
+          <p class="auth-card__eyebrow" id="cardEyebrow">ДОБРО ПОЖАЛОВАТЬ, ПУТНИК</p>
+          <h2 class="auth-card__title" id="cardTitle">Создать аккаунт</h2>
+
+          <form id="authForm" class="auth-form" novalidate>
+            <div class="form-group" id="nameGroup">
+              <label for="username">Ваше имя</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Как к вам обращаться?"
+                autocomplete="name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Электронная почта</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Пароль</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Не менее 8 символов"
+                  minlength="8"
+                  required
+                />
+                <button type="button" id="togglePassword" class="eye-btn" aria-label="Показать пароль">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div id="apiStatus" class="api-status" hidden></div>
+
+            <button type="submit" id="submitBtn" class="submit-btn">
+              <span id="submitBtnText">Создать аккаунт</span>
+              <span class="submit-btn__arrow">→</span>
+            </button>
+          </form>
+
+          <p class="auth-card__footer">
+            <span id="switchPrompt">Уже есть аккаунт?</span>
+            <button type="button" id="switchModeBtn" class="link-btn">Войти</button>
+          </p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
