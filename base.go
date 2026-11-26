@@ -11,3 +11,9 @@ type BaseEntity struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+
+// VersionedEntity — базовая структура для версионируемых сущностей (сценарии и т.д.).
+type VersionedEntity struct {
+	ID      string `json:"id"`
+	Version int    `json:"version"`
+}
