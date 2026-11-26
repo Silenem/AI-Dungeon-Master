@@ -86,7 +86,21 @@ func NewMemoryOutboxEntry(sessionID uuid.UUID, turn Turn) *MemoryOutboxEntry { r
 func (m *MemoryOutboxEntry) ScheduleRetry(delay time.Duration)               {}
 
 
+// --- ИНТЕРФЕЙСЫ РЕПОЗИТОРИЕВ ---
 
+type PostgresStorage interface {
+	CreateUser(ctx context.Context, u *User) error
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
+
+	CreateCharacter(ctx context.Context, c *Character) error
+	GetCharacterByID(ctx context.Context, id uuid.UUID) (*Character, error)
+
+	SaveSessionWithOutbox(ctx context.Context, s *Session, entries []MemoryOutboxEntry) error
+	GetSessionByID(ctx context.Context, id uuid.UUID) (*Session, error)
+
+	FetchPendingOutbox(ctx context.Context, limit int) ([]MemoryOutboxEntry, error)
+	MarkOutboxProcessed(ctx context.Context, sessionID uuid.UUID, turnNo int64) error
+}
 
 
 
