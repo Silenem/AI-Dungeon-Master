@@ -32,3 +32,22 @@ type Attributes struct {
 	Constitution int16 `json:"constitution"`
 }
 
+type Character struct {
+	BaseEntity
+	UserID         uuid.UUID       `json:"user_id"`
+	Name           string          `json:"name"`
+	ClassID        string          `json:"class_id"`
+	SubclassID     *string         `json:"subclass_id"`
+	Level          int16           `json:"level"`
+	Stats          Attributes      `json:"stats"`
+	StartingGear   json.RawMessage `json:"starting_gear"` // jsonb
+	RulesetVersion int             `json:"ruleset_version"`
+}
+
+func NewCharacter(userID uuid.UUID, name, classID string, stats Attributes, rulesetVer int) (*Character, error) {
+	return nil, nil
+}
+func (c *Character) ValidateStats() error       { return nil }
+func (c *Character) LevelUp() error             { return nil }
+func (c *Character) SetSubclass(id string) error { return nil }
+
