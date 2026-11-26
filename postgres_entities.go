@@ -21,3 +21,14 @@ type User struct {
 func NewUser(email, passwordHash, nickname string) *User { return nil }
 func (u *User) CheckPassword(rawPassword string) bool    { return false }
 func (u *User) UpdateProfile(nickname string, avatarURL *string) error { return nil }
+
+
+// --- CHARACTER ---
+
+type Attributes struct {
+	Strength     int16 `json:"strength"`
+	Dexterity    int16 `json:"dexterity"`
+	Willpower    int16 `json:"willpower"`
+	Constitution int16 `json:"constitution"`
+}
+
