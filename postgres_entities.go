@@ -71,3 +71,24 @@ func NewSession(char *Character, scenario *Scenario) *Session { return nil }
 func (s *Session) SyncFromActive(active *ActiveSession) error { return nil }
 func (s *Session) AdvanceMemoryQueue(turnNo int64)            {}
 func (s *Session) Finish(status string)                       {}
+
+// --- MEMORY OUTBOX ---
+
+type MemoryOutboxEntry struct {
+	SessionID     uuid.UUID `json:"session_id"`
+	TurnNo        int64     `json:"turn_no"`
+	Payload       Turn      `json:"payload"` // jsonb
+	CreatedAt     time.Time `json:"created_at"`
+	NextAttemptAt time.Time `json:"next_attempt_at"`
+}
+
+func NewMemoryOutboxEntry(sessionID uuid.UUID, turn Turn) *MemoryOutboxEntry { return nil }
+func (m *MemoryOutboxEntry) ScheduleRetry(delay time.Duration)               {}
+
+
+
+
+
+
+
+
