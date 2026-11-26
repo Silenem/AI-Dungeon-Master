@@ -51,3 +51,23 @@ func (c *Character) ValidateStats() error       { return nil }
 func (c *Character) LevelUp() error             { return nil }
 func (c *Character) SetSubclass(id string) error { return nil }
 
+
+// --- SESSION (долговременное сохранение в PostgreSQL) ---
+
+type Session struct {
+	BaseEntity
+	CharacterID             uuid.UUID `json:"character_id"`
+	ScenarioID              string    `json:"scenario_id"`
+	ScenarioVersion         int       `json:"scenario_version"`
+	RulesetVersion          int       `json:"ruleset_version"`
+	Status                  string    `json:"status"`
+	LastPlayedAt            time.Time `json:"last_played_at"`
+	Revision                int64     `json:"revision"`
+	MemoryQueuedThroughTurn int64     `json:"memory_queued_through_turn"`
+	State                   Snapshot  `json:"state"` // jsonb
+}
+
+func NewSession(char *Character, scenario *Scenario) *Session { return nil }
+func (s *Session) SyncFromActive(active *ActiveSession) error { return nil }
+func (s *Session) AdvanceMemoryQueue(turnNo int64)            {}
+func (s *Session) Finish(status string)                       {}
