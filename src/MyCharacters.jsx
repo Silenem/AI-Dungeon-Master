@@ -1,13 +1,16 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CLASSES, STAT_LABELS, getCharacters, startStory } from "./api";
+import { useUser } from "./useUser";
 import "./MyCharacters.css";
 
-const ICONS = { guard: "🛡", tracker: "🌲", mystic: "✦" };
+
+const ICONS = { tracker: "🌲", warrior: "🛡", mage: "✨" };
 
 export default function MyCharacters() {
   const navigate = useNavigate();
+  const user = useUser(); 
+  
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -30,20 +33,26 @@ export default function MyCharacters() {
 
   return (
     <div className="mc-page">
-      {/* ----- Шапка ----- */}
+      
       <header className="mc-header">
         <div className="mc-header__left">
-          <span className="mc-logo">✦ ИИ-Мастер</span>
+          <span className="mc-logo">✦ AI Dungeon Master</span>
           <Link to="/stories" className="mc-nav">Истории</Link>
-          <Link to="/characters" className="mc-nav mc-nav--active">Персонажи</Link>
+          <Link to="/my_characters" className="mc-nav mc-nav--active">Персонажи</Link>
         </div>
         <div className="mc-header__right">
           <button className="mc-link-btn">☼ Светлая тема</button>
-          <span>👤 Silenem</span>
+          
+          
+          {user ? (
+            <Link to="/profile" className="mc-nav">👤 {user.name}</Link>
+          ) : (
+            <Link to="/auth" className="mc-nav">Регистрация</Link>
+          )}
         </div>
       </header>
 
-      {/* ----- Контент ----- */}
+   
       <main className="mc-frame">
         <div className="mc-top">
           <div>
@@ -68,17 +77,17 @@ export default function MyCharacters() {
                 </div>
 
                 <div className="mc-hero">
-                  <span className="mc-avatar">{ICONS[c.classId]}</span>
+                  <span className="mc-avatar">{ICONS[c.classId] || "✦"}</span>
                   <div>
                     <div className="mc-name">{c.name}</div>
-                    <div className="mc-muted">{cls.title}</div>
+                    <div className="mc-muted">{cls?.title || "Неизвестный класс"}</div>
                   </div>
                 </div>
 
                 <p className="mc-backstory">{c.backstory}</p>
 
                 <div className="mc-stats">
-                  {Object.entries(cls.stats).map(([k, v]) => (
+                  {cls && Object.entries(cls.stats).map(([k, v]) => (
                     <div key={k}>
                       <div className="mc-muted mc-small">{STAT_LABELS[k]}</div>
                       <div className="mc-stats__val">+{v}</div>
@@ -99,13 +108,13 @@ export default function MyCharacters() {
                 </div>
 
                 <div className="mc-actions">
-                  <button className="mc-btn mc-btn--ghost" onClick={() => navigate(`/characters/${c.id}`)}>
+                  <button className="mc-btn mc-btn--ghost" onClick={() => navigate(`/my_characters`)}>
                     Подробнее
                   </button>
+                  
+                  
                   {inAdventure ? (
-
-
-<button className="mc-btn" onClick={() => navigate("/stories")}>Продолжить →</button>
+                    <button className="mc-btn" onClick={() => navigate("/stories")}>Продолжить →</button>
                   ) : (
                     <button className="mc-btn" onClick={() => handleStart(c.id)}>Начать историю →</button>
                   )}
