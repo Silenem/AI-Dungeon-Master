@@ -1,48 +1,15 @@
-const DungeonMasterAPI = {
-  BASE_URL: 'https://jsonplaceholder.typicode.com',
-
-  async authenticateUser(payload, isLoginMode) {
-    const endpoint = isLoginMode ? '/posts' : '/users';
-    const response = await fetch(`${this.BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: JSON.stringify({
-        name: payload.username || 'Путник',
-        email: payload.email,
-        action: isLoginMode ? 'login' : 'register',
-        timestamp: new Date().toISOString(),
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Ошибка сервера: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    const session = {
-      userId: data.id || Math.floor(Math.random() * 1000),
-      name: payload.username || payload.email.split('@')[0],
-      email: payload.email,
-      token: `dm_jwt_${Math.random().toString(36).substring(2)}`,
-    };
-    localStorage.setItem('dm_session', JSON.stringify(session));
-
-    return session;
-  },
-
-  async fetchStartingQuest(heroName) {
-    const response = await fetch(`${this.BASE_URL}/posts/1`);
-    if (!response.ok) {
-      throw new Error('Не удалось связаться с сервером');
-    }
-
-    return 'Вы успешно зарегистрировались!';
-  },
-};
-
+async function authenticateUser({ username, email, password }, isLoginMode) {
+  const action = isLoginMode ? 'login' : 'register';
+  const response = await fetch(`/api/auth/${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, ...(isLoginMode ? {} : { nickname: username }) }),
+  });
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null);
+    throw new Error(failure?.error ?? 'Не удалось связаться с сервером.');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const authForm = document.getElementById('authForm');
@@ -106,6 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   switchModeBtn.addEventListener('click', () => toggleAuthMode());
   headerAuthBtn.addEventListener('click', () => toggleAuthMode(true));
+  if (new URLSearchParams(window.location.search).get('mode') === 'login') {
+    toggleAuthMode(true);
+  }
 
   // Отправка формы через API
   authForm.addEventListener('submit', async (event) => {
@@ -135,17 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtnText.textContent = 'Связь с Мастером...';
 
     try {
-      const session = await DungeonMasterAPI.authenticateUser(
-        { username, email, password },
-        isLoginMode
-      );
-
-      const prologue = await DungeonMasterAPI.fetchStartingQuest(session.name);
-
-      showStatus(`✓ Аккаунт готов (ID: #${session.userId}). ${prologue}`, false);
-      authForm.reset();
+      await authenticateUser({ username, email, password }, isLoginMode);
+      if (isLoginMode) {
+        window.location.assign('/');
+        return;
+      }
+      toggleAuthMode(true);
+      passwordInput.value = '';
+      passwordInput.focus();
+      showStatus('Аккаунт создан. Войдите с вашим паролем.', false);
     } catch (error) {
-      showStatus(`Ошибка соединения с API: ${error.message}`, true);
+      showStatus(error.message, true);
     } finally {
       submitBtn.disabled = false;
       submitBtnText.textContent = isLoginMode ? 'Войти' : 'Создать аккаунт';

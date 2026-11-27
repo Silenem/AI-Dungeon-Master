@@ -1,44 +1,60 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 
-const mockData = {
-  Name: "Silenem",
-  Email: "player@example.com",
-  CurrentStory: {
-    Title: "Тень старой башни",
-    Location: "У запертой башни · Эрдан, следопыт",
-    Description: "Медный ключ уже у вас. За дверью кто-то есть — и он услышал ваши шаги.",
-    Health: "16 / 20"
-  },
-  Characters: [
-    { Id: 1, Name: "Эрдан", Class: "Следопыт" },
-    { Id: 2, Name: "Бран", Class: "Страж" },
-    { Id: 3, Name: "Лиора", Class: "Мистик" }
-  ]
-};
-const CharacterCard = ({ character }) => (
-  <div className="character-card">
-    {/* Заглушка для иконки (треугольник/круг/звезда) */}
-    <div className="char-icon-placeholder">
-      {character.Id === 1 ? '▲' : character.Id === 2 ? '⬤' : '✦'}
-    </div>
-    <div className="char-info">
-      <h4>{character.Name}</h4>
-      <p>{character.Class}</p>
-    </div>
-  </div>
-);
+const loginPath = '/auth/index.html?mode=login';
+
 export default function App() {
   const [theme, setTheme] = useState('dark');
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState('');
+  const [signingOut, setSigningOut] = useState(false);
 
-  const toggleTheme = (newTheme) => setTheme(newTheme);
+  useEffect(() => {
+    const controller = new AbortController();
+    async function loadProfile() {
+      try {
+        const response = await fetch('/api/me', { signal: controller.signal });
+        if (response.status === 401) {
+          window.location.replace(loginPath);
+          return;
+        }
+        if (!response.ok) throw new Error('Не удалось загрузить профиль.');
+        setProfile(await response.json());
+      } catch (failure) {
+        if (!controller.signal.aborted) setError(failure.message);
+      }
+    }
+    loadProfile();
+    return () => controller.abort();
+  }, []);
+
+  async function logout() {
+    setSigningOut(true);
+    setError('');
+    try {
+      const response = await fetch('/api/auth/session', { method: 'DELETE' });
+      if (!response.ok) throw new Error('Не удалось завершить сессию.');
+      window.location.replace(loginPath);
+    } catch (failure) {
+      setError(failure.message);
+      setSigningOut(false);
+    }
+  }
+
+  if (!profile) {
+    return (
+      <div className="app-container dark">
+        <main className="profile-page">
+          {error ? <p role="alert">{error}</p> : <p role="status">Загружаем профиль…</p>}
+          {error && <a href={loginPath}>Вернуться ко входу</a>}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={`app-container ${theme}`}>
-      {/* Слой для затемнения/осветления фона */}
       <div className="background-layer" />
-
-      {/* Навигация */}
       <nav className="top-nav">
         <div className="nav-links">
           <span className="logo">✦ ИИ-Мастер</span>
@@ -46,81 +62,51 @@ export default function App() {
           <a href="#characters">Персонажи</a>
         </div>
         <div className="nav-actions">
-          <button onClick={() => toggleTheme(theme === 'dark' ? 'light' : 'dark')} className="theme-toggle">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
             {theme === 'dark' ? '☀ Светлая тема' : '☾ Тёмная тема'}
           </button>
-          <span className="user-tag">👤 {mockData.Name}</span>
+          <span className="user-tag">👤 {profile.nickname}</span>
         </div>
       </nav>
 
-      {/* Основной контент */}
       <main className="profile-page">
         <header className="profile-header">
-          <div className="avatar-large">S</div>
+          <div className="avatar-large" aria-hidden="true">{profile.nickname.slice(0, 1).toUpperCase()}</div>
           <div className="header-info">
             <span className="label">ПРОФИЛЬ ПУТНИКА</span>
-            <h1>{mockData.Name}</h1>
-            <p>Ваши герои и незаконченные истории.</p>
+            <h1>{profile.nickname}</h1>
           </div>
         </header>
 
         <div className="profile-content">
-          {/* Левая колонка */}
           <div className="left-column">
-            <section className="continue-adventure">
-              <div className="section-header">
-                <span className="label">ПРОДОЛЖИТЬ ПРИКЛЮЧЕНИЕ</span>
-                <span className="saved-status">✓ Сохранено</span>
-              </div>
-              <h2>{mockData.CurrentStory.Title}</h2>
-              <p className="location">📍 {mockData.CurrentStory.Location}</p>
-              <p className="description">{mockData.CurrentStory.Description}</p>
-              
-              <div className="action-row">
-                <span className="health">♡ Здоровье {mockData.CurrentStory.Health}</span>
-                <button className="btn-primary">Вернуться в историю →</button>
-              </div>
+            <section id="stories" className="continue-adventure">
+              <h2>Приключения</h2>
+              <p className="description">Прохождения появятся после подключения игрового модуля.</p>
             </section>
-
-            <section className="characters-section">
-              <div className="section-header">
-                <h3>Мои персонажи</h3>
-                <a href="#all" className="link-muted">Все персонажи ↗</a>
-              </div>
-              <div className="characters-grid">
-                {mockData.Characters.map(char => (
-                  <CharacterCard key={char.Id} character={char} />
-                ))}
-              </div>
+            <section id="characters" className="characters-section">
+              <h3>Мои персонажи</h3>
+              <p className="description">Создание персонажей появится после подключения классов.</p>
             </section>
           </div>
 
-          {/* Правая колонка */}
           <div className="right-column">
             <section className="personal-data">
               <h3>Личные данные</h3>
               <div className="input-group">
-                <label>Имя в профиле</label>
-                <input type="text" defaultValue={mockData.Name} />
+                <label htmlFor="profile-nickname">Имя в профиле</label>
+                <input id="profile-nickname" value={profile.nickname} readOnly />
               </div>
               <div className="input-group">
-                <label>Электронная почта</label>
-                <input type="email" defaultValue={mockData.Email} />
+                <label htmlFor="profile-email">Электронная почта</label>
+                <input id="profile-email" type="email" value={profile.email} readOnly />
               </div>
-              <button className="btn-secondary">Сохранить изменения</button>
             </section>
-
             <section className="settings">
-              <h3>Оформление</h3>
-              <div className="theme-switcher">
-                <button className={`theme-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => toggleTheme('light')}>
-                  ☀ Светлое
-                </button>
-                <button className={`theme-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => toggleTheme('dark')}>
-                  ☾ Тёмное
-                </button>
-              </div>
-              <a href="#logout" className="logout-link">↪ Выйти из аккаунта</a>
+              <button type="button" className="btn-secondary" onClick={logout} disabled={signingOut}>
+                {signingOut ? 'Выходим…' : 'Выйти из аккаунта'}
+              </button>
+              {error && <p role="alert">{error}</p>}
             </section>
           </div>
         </div>
