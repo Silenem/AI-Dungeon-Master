@@ -98,3 +98,102 @@ var SubclassRules = map[string]SubclassRule{
 		CanUseShield:  false,
 	},
 }
+
+// --- РАСЧЁТ БОЕВЫХ ПАРАМЕТРОВ ПЕРСОНАЖА ---
+
+// MaxHP рассчитывает максимум хитов: 1-й уровень = кость хитов + мод. Телосложения,
+// каждый следующий уровень = (кость/2 + 1) + мод. Телосложения (минимум +1 за уровень).
+func (c *Character) MaxHP() int {
+	rule, ok := ClassRules[c.ClassID]
+	if !ok {
+		return 1
+	}
+
+	conMod := c.Stats.Modifier(c.Stats.Constitution)
+	hp := max(1, rule.HitDie+conMod)
+
+	if c.Level > 1 {
+		perLevel := max(1, (rule.HitDie/2+1)+conMod)
+		hp += int(c.Level-1) * perLevel
+	}
+	return hp
+}
+
+// BaseAC возвращает базовый класс доспеха (с учётом щита, если экипирован и разрешён).
+func (c *Character) BaseAC(withShield bool) int {
+	rule, ok := ClassRules[c.ClassID]
+	if !ok {
+		return 10
+	}
+
+	ac := rule.BaseAC
+	if withShield && c.CanUseShield() {
+		ac += 2
+	}
+	return ac
+}
+
+// InitiativeBonus возвращает бонус к инициативе (модификатор Ловкости).
+func (c *Character) InitiativeBonus() int {
+	return c.Stats.Modifier(c.Stats.Dexterity)
+}
+
+// PrimaryStatMod возвращает модификатор основной характеристики класса.
+func (c *Character) PrimaryStatMod() int {
+	switch c.ClassID {
+	case ClassFighter:
+		return c.Stats.Modifier(c.Stats.Strength)
+	case ClassRanger:
+		return c.Stats.Modifier(c.Stats.Dexterity)
+	case ClassMystic:
+		return c.Stats.Modifier(c.Stats.Willpower)
+	default:
+		return 0
+	}
+}
+
+// CanUseShield проверяет, может ли персонаж использовать щит согласно подклассу.
+func (c *Character) CanUseShield() bool {
+	if c.SubclassID == nil {
+		return c.ClassID == ClassFighter
+	}
+	sub, ok := SubclassRules[*c.SubclassID]
+	return ok && sub.CanUseShield
+}
+
+// CanWearArmor проверяет допуск персонажа к указанному типу брони.
+func (c *Character) CanWearArmor(armor ArmorType) bool {
+	if armor == ArmorNone {
+		return true
+	}
+	if c.SubclassID == nil {
+		switch c.ClassID {
+		case ClassFighter:
+			return armor == ArmorLight || armor == ArmorMedium
+		case ClassRanger:
+			return armor == ArmorLight
+		default:
+			return false
+		}
+	}
+
+	sub, ok := SubclassRules[*c.SubclassID]
+	if !ok {
+		return false
+	}
+	for _, allowed := range sub.AllowedArmor {
+		if allowed == armor {
+			return true
+		}
+	}
+	return false
+}
+
+// MaxSpellSlots возвращает количество ячеек заклинаний 1-го круга (для Мистика).
+func (c *Character) MaxSpellSlots() int {
+	rule, ok := ClassRules[c.ClassID]
+	if !ok || !rule.IsSpellcaster {
+		return 0
+	}
+	return 1 + int(c.Level) // На 1 уровне: 2 ячейки, далее +1 за уровень
+}
