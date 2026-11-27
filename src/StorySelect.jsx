@@ -1,13 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CLASSES, getStory, getProgress } from "./api";
+import { useUser } from "./useUser"; // ← добавили
 import "./StorySelect.css";
 
 const FEATURE_ICONS = ["💬", "🔍", "🪧"];
 
 export default function StorySelect() {
   const navigate = useNavigate();
+  const user = useUser(); 
+  
   const [story, setStory] = useState(null);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState("");
@@ -26,17 +28,23 @@ export default function StorySelect() {
       
       <header className="ss-header">
         <div className="ss-header__left">
-          <span className="ss-logo">✦ ИИ-Мастер</span>
+          <span className="ss-logo">✦ AI Dungeon Master</span>
           <Link to="/stories" className="ss-nav ss-nav--active">Истории</Link>
           <Link to="/my_characters" className="ss-nav">Персонажи</Link>
         </div>
         <div className="ss-header__right">
           <button className="ss-link-btn">☼ Светлая тема</button>
-          <Link to="#" className="ss-nav ">👤 Silenem</Link>
+          
+          
+          {user ? (
+            <Link to="/profile" className="ss-nav">👤 {user.name}</Link>
+          ) : (
+            <Link to="/auth" className="ss-nav">Регистрация</Link>
+          )}
         </div>
       </header>
 
-      {/* ----- Контент ----- */}
+      
       <main className="ss-frame">
         <p className="ss-eyebrow">ПРИКЛЮЧЕНИЯ</p>
         <h1 className="ss-title">Выберите свою историю</h1>
@@ -90,7 +98,7 @@ export default function StorySelect() {
                     <span className="ss-avatar">🌲</span>
                     <div>
                       <div className="ss-hero__name">{progress.character.name}</div>
-                      <div className="ss-muted ss-small">{CLASSES[progress.character.classId].title}</div>
+                      <div className="ss-muted ss-small">{CLASSES[progress.character.classId]?.title || "Класс"}</div>
                     </div>
                   </div>
 
@@ -114,7 +122,11 @@ export default function StorySelect() {
               ) : (
                 <>
                   <h3 className="ss-side__title">Пока нет прохождений</h3>
-                  <p className="ss-muted">Выберите персонажа, чтобы начать историю.</p>
+                  <p className="ss-muted">
+                    {user 
+                      ? "Выберите персонажа, чтобы начать историю." 
+                      : "Войдите, чтобы сохранять героев и продолжать истории."}
+                  </p>
                 </>
               )}
             </aside>
