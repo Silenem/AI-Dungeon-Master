@@ -2,6 +2,7 @@ package domain
 
 import (
 	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -10,7 +11,6 @@ type BaseEntity struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 }
-
 
 // VersionedEntity — базовая структура для версионируемых сущностей (сценарии и т.д.).
 type VersionedEntity struct {
