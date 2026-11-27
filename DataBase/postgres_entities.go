@@ -12,6 +12,9 @@ import (
 )
 
 // --- КОНСТАНТЫ КЛАССОВ И ПОДКЛАССОВ (по Дереву классов v0) ---
+const (
+	ClassFighter = "fighter" // Боец
+	ClassRanger  = "ranger"  // Следопыт
 	ClassMystic  = "mystic"  // Мистик
 
 	SubclassGuardian = "guardian" // Страж (Боец)
