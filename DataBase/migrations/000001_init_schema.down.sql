@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS memory_outbox;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS characters;
+DROP TABLE IF EXISTS users;
