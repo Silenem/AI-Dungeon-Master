@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CLASSES, STAT_LABELS, createCharacter } from "./api";
+import { useUser } from "./useUser"; // ← добавили
 import "./CreateCharacter.css";
 
 export default function CreateCharacter() {
   const navigate = useNavigate();
+  const user = useUser();
+  
   const [name, setName] = useState("");
   const [classId, setClassId] = useState("tracker");
   const [backstory, setBackstory] = useState("");
@@ -20,7 +23,7 @@ export default function CreateCharacter() {
     setLoading(true);
     try {
       await createCharacter({ name: name.trim(), classId, backstory });
-      navigate("/characters");
+      navigate("/my_characters");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -30,20 +33,26 @@ export default function CreateCharacter() {
 
   return (
     <div className="cc-page">
-      {/* ----- Шапка ----- */}
+ 
       <header className="cc-header">
         <div className="ss-header__left">
-          <span className="ss-logo">✦ ИИ-Мастер</span>
+          <span className="ss-logo">✦ AI Dungeon Master</span>
           <Link to="/stories" className="ss-nav">Истории</Link>
           <Link to="/my_characters" className="ss-nav">Персонажи</Link>
         </div>
         <div className="ss-header__right">
           <button className="ss-link-btn">☼ Светлая тема</button>
-          <Link to="#" className="ss-nav">👤 Silenem</Link>
+          
+          {/* ЛОГИКА ПРОФИЛЯ */}
+          {user ? (
+            <Link to="/profile" className="ss-nav">👤 {user.name}</Link>
+          ) : (
+            <Link to="/auth" className="ss-nav">Регистрация</Link>
+          )}
         </div>
       </header>
 
-      {/* ----- Контент ----- */}
+
       <main className="cc-frame">
         <form className="cc-main" onSubmit={handleSubmit}>
           <p className="cc-eyebrow">ВАШ СЛЕДУЮЩИЙ ГЕРОЙ</p>
@@ -71,8 +80,7 @@ export default function CreateCharacter() {
                 <span className="cc-class__icon">{c.icon}</span>
                 <span className="cc-class__title">{c.title}</span>
                 <span className="cc-class__desc">
-                  {c.description[0]}
-{c.description[1]}
+                  {c.description[0]}<br/>{c.description[1]}
                 </span>
                 <span className="cc-class__bonus">
                   {Object.entries(c.stats).filter(([, v]) => v === 3).map(([k]) => `${STAT_LABELS[k]} +3`)}
@@ -103,7 +111,7 @@ export default function CreateCharacter() {
           </div>
         </form>
 
-        {/* ----- Лист персонажа ----- */}
+    
         <aside className="cc-sheet">
           <p className="cc-eyebrow">ЛИСТ ПЕРСОНАЖА</p>
           <div className="cc-sheet__hero">
