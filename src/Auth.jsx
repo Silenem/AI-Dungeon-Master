@@ -43,3 +43,65 @@ export default function Register() {
           </span>
         </div>
       </header>
+
+      <main className="rg-frame">
+        <section className="rg-hero">
+          <p className="rg-eyebrow">AI DUNGEON MASTER</p>
+          <h1 className="rg-title">
+            У каждой истории есть первый шаг.
+          </h1>
+          <p className="rg-lead">
+            Создайте героя. Войдите в приключение. Решите, чем оно закончится.
+          </p>
+          <hr className="rg-divider" />
+          <p className="rg-quote">
+            Мастер задаёт мир. Вы выбираете свой путь.
+          </p>
+        </section>
+
+        <form className="rg-card" onSubmit={onSubmit} noValidate>
+          <p className="rg-eyebrow">ДОБРО ПОЖАЛОВАТЬ, ПУТНИК</p>
+          <h2 className="rg-card__title">Создать аккаунт</h2>
+
+          <label className="rg-label" htmlFor="rg-name">Ваше имя</label>
+          <input
+            id="rg-name" className="rg-input" type="text"
+            placeholder="Как к вам обращаться?"
+            value={name} onChange={(e) => setName(e.target.value)}
+          />
+
+          <label className="rg-label" htmlFor="rg-email">Электронная почта</label>
+          <input
+            id="rg-email" className="rg-input" type="email"
+            placeholder="you@example.com"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <label className="rg-label" htmlFor="rg-pass">Пароль</label>
+          <div className="rg-pass">
+            <input
+              id="rg-pass" className="rg-input" type={showPass ? "text" : "password"}
+              placeholder="Не менее 8 символов"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button" className="rg-eye"
+              aria-label={showPass ? "Скрыть пароль" : "Показать пароль"}
+              onClick={() => setShowPass(!showPass)}
+            >
+              {showPass ? "🙈" : "👁"}
+            </button>
+          </div>
+
+          {error && <p className="rg-error">{error}</p>}
+
+          <button type="submit" className="rg-btn">Создать аккаунт →</button>
+
+          <p className="rg-foot">
+            Уже есть аккаунт? <Link to="/auth" className="rg-foot__link">Войти</Link>
+          </p>
+        </form>
+      </main>
+    </div>
+  );
+}
