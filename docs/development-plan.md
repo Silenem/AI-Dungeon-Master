@@ -17,9 +17,15 @@
 
 Первый сквозной маршрут — регистрация, вход, чтение профиля и выход. Учётные записи храним в PostgreSQL, сессию входа — в Redis. `GET /api/healthz` проверяет подключение к PostgreSQL, Redis и Elasticsearch. Создание героя и сценарий подключаем после готовности справочника классов и игрового модуля.
 
-На машине сборки из корня репозитория собрать фронтенд командой `cd frontend && npm ci && npm run build`. В каталоге `backend` собрать `./cmd/server` с `GOOS=linux`, `GOARCH=amd64` и `CGO_ENABLED=0` в `bin/aidm-api`. На INOAGENT передать `frontend/dist`, `frontend/nginx.conf`, бинарник, миграцию и `compose.yaml`. Файл `.env` на сервере задаёт пароль PostgreSQL и локальный порт.
+На машине сборки из корня репозитория собрать фронтенд командой `cd frontend && npm ci && npm run build`. В каталоге `backend` собрать `./cmd/server` с `GOOS=linux`, `GOARCH=amd64` и `CGO_ENABLED=0` в `bin/aidm-api`. На INOAGENT передать `frontend/dist`, `frontend/nginx.conf`, бинарник, SQL-миграции и `compose.yaml`. Файл `.env` на сервере задаёт пароль PostgreSQL и локальный порт.
 
 Запуск из каталога стенда — `docker compose up -d`. Compose публикует фронтенд и API на `127.0.0.1:18080` для проксирования с HTTPS-домена. Проверка готовности — `curl -fsS http://127.0.0.1:18080/api/healthz`. Начальная SQL-миграция выполняется при создании нового тома PostgreSQL. Дальнейшие миграции применяем отдельно к существующему тому.
+
+### Подтверждение почты и двухфакторный вход
+
+Перед обновлением существующего PostgreSQL применяем `000002_email_auth.up.sql` командой `docker compose exec -T postgres psql -U dungeon -d dungeon -v ON_ERROR_STOP=1 < backend/DataBase/migrations/000002_email_auth.up.sql`. На новом томе Compose применяет миграцию автоматически. Старые аккаунты сохраняют вход по паролю и могут включить 2FA в профиле. Для включения и выключения нужно ввести текущий пароль и код из письма.
+
+Почтовый транспорт задаётся через `AUTH_SMTP_*` в серверном `.env`. Для Yandex Cloud Postbox используем `postbox.cloud.yandex.net:587` и `starttls`, а адрес отправителя выбираем на подтверждённом домене. Для отдельного ящика Яндекс Почты используем `smtp.yandex.ru:465`, `tls` и пароль приложения. Сгенерируйте отдельный ключ `AUTH_CODE_SECRET` командой `openssl rand -hex 32`. Без SMTP новые регистрации и запросы почтовых кодов недоступны. Для проверки с почтовой ловушкой используем отдельный Compose-проект и `AUTH_SMTP_SECURITY=plain` без SMTP-учётных данных. [Настройка Cloud Postbox](https://yandex.cloud/ru/docs/postbox/quickstart) · [SMTP Яндекс Почты](https://yandex.ru/support/yandex-360/customers/mail/ru/mail-clients/mail-clients-troubleshooting)
 
 [Экспорт «Осиновый Брод»](setting-dark-fantasy.md) — пример пробного прогона модели на 8 млрд параметров без игровых сервисов. Интеграционный стенд нужен для следующей проверки, уже с Go и сохранениями.
 

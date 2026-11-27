@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import EmailSecurity from './EmailSecurity.jsx';
 import './App.css';
 
 const loginPath = '/auth/index.html?mode=login';
@@ -102,6 +103,9 @@ export default function App() {
                 <input id="profile-email" type="email" value={profile.email} readOnly />
               </div>
             </section>
+            <EmailSecurity enabled={profile.email_2fa_enabled} onChange={emailTwoFactor => {
+              setProfile(current => ({ ...current, email_2fa_enabled: emailTwoFactor }));
+            }} />
             <section className="settings">
               <button type="button" className="btn-secondary" onClick={logout} disabled={signingOut}>
                 {signingOut ? 'Выходим…' : 'Выйти из аккаунта'}

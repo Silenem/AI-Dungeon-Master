@@ -77,7 +77,7 @@
               />
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="emailGroup">
               <label for="email">Электронная почта</label>
               <input
                 type="email"
@@ -89,7 +89,7 @@
               />
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="passwordGroup">
               <label for="password">Пароль</label>
               <div class="password-wrapper">
                 <input
@@ -98,6 +98,7 @@
                   name="password"
                   placeholder="Не менее 8 символов"
                   minlength="8"
+                  autocomplete="new-password"
                   required
                 />
                 <button type="button" id="togglePassword" class="eye-btn" aria-label="Показать пароль">
@@ -109,7 +110,12 @@
               </div>
             </div>
 
-            <div id="apiStatus" class="api-status" hidden></div>
+            <div class="form-group" id="codeGroup" hidden>
+              <label for="emailCode">Код из письма</label>
+              <input type="text" id="emailCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
+            </div>
+
+            <div id="apiStatus" class="api-status" role="status" hidden></div>
 
             <button type="submit" id="submitBtn" class="submit-btn">
               <span id="submitBtnText">Создать аккаунт</span>

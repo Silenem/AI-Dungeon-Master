@@ -11,6 +11,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./backend/DataBase/migrations/000001_init_schema.up.sql:/docker-entrypoint-initdb.d/010_init.sql:ro
+      - ./backend/DataBase/migrations/000002_email_auth.up.sql:/docker-entrypoint-initdb.d/020_email_auth.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U dungeon -d dungeon"]
       interval: 5s
@@ -50,6 +51,13 @@ services:
       REDIS_URL: redis://redis:6379/0
       ELASTICSEARCH_URL: http://elasticsearch:9200
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      AUTH_CODE_SECRET: ${AUTH_CODE_SECRET:-}
+      AUTH_SMTP_HOST: ${AUTH_SMTP_HOST:-}
+      AUTH_SMTP_PORT: ${AUTH_SMTP_PORT:-587}
+      AUTH_SMTP_SECURITY: ${AUTH_SMTP_SECURITY:-starttls}
+      AUTH_SMTP_USER: ${AUTH_SMTP_USER:-}
+      AUTH_SMTP_PASSWORD: ${AUTH_SMTP_PASSWORD:-}
+      AUTH_SMTP_FROM: ${AUTH_SMTP_FROM:-}
     volumes:
       - ./backend/bin/aidm-api:/app/aidm-api:ro
     depends_on:

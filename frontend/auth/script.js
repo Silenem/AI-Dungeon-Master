@@ -1,24 +1,16 @@
-async function authenticateUser({ username, email, password }, isLoginMode) {
-  const action = isLoginMode ? 'login' : 'register';
-  const response = await fetch(`/api/auth/${action}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, ...(isLoginMode ? {} : { nickname: username }) }),
-  });
-  if (!response.ok) {
-    const failure = await response.json().catch(() => null);
-    throw new Error(failure?.error ?? 'Не удалось связаться с сервером.');
-  }
-}
+import { postAuth } from '../src/auth-api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const authForm = document.getElementById('authForm');
   const nameGroup = document.getElementById('nameGroup');
+  const emailGroup = document.getElementById('emailGroup');
+  const passwordGroup = document.getElementById('passwordGroup');
+  const codeGroup = document.getElementById('codeGroup');
   const usernameInput = document.getElementById('username');
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
+  const codeInput = document.getElementById('emailCode');
   const togglePasswordBtn = document.getElementById('togglePassword');
-
   const cardEyebrow = document.getElementById('cardEyebrow');
   const cardTitle = document.getElementById('cardTitle');
   const submitBtn = document.getElementById('submitBtn');
@@ -27,100 +19,119 @@ document.addEventListener('DOMContentLoaded', () => {
   const switchModeBtn = document.getElementById('switchModeBtn');
   const headerAuthBtn = document.getElementById('headerAuthBtn');
   const apiStatus = document.getElementById('apiStatus');
-
   const themeToggle = document.getElementById('themeToggle');
   const themeText = document.getElementById('themeText');
   const themeIcon = document.getElementById('themeIcon');
 
-  let isLoginMode = false;
+  let isLoginMode = new URLSearchParams(window.location.search).get('mode') === 'login';
+  let challenge = null;
 
-  // Переключение темы (Тёмная / Светлая)
   themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-theme');
     themeText.textContent = isLight ? 'Тёмная тема' : 'Светлая тема';
     themeIcon.textContent = isLight ? '🌙' : '☀️';
   });
 
-  // Показать / скрыть пароль
   togglePasswordBtn.addEventListener('click', () => {
-    const isPassword = passwordInput.type === 'password';
-    passwordInput.type = isPassword ? 'text' : 'password';
+    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
   });
 
-  // Переключение режима «Создать аккаунт» / «Войти»
-  function toggleAuthMode(forceLogin) {
-    isLoginMode = typeof forceLogin === 'boolean' ? forceLogin : !isLoginMode;
+  function renderForm() {
+    const awaitingCode = Boolean(challenge);
+    nameGroup.hidden = isLoginMode || awaitingCode;
+    emailGroup.hidden = awaitingCode;
+    passwordGroup.hidden = awaitingCode;
+    codeGroup.hidden = !awaitingCode;
+    passwordInput.autocomplete = isLoginMode ? 'current-password' : 'new-password';
+    cardEyebrow.textContent = isLoginMode ? 'С ВОЗВРАЩЕНИЕМ, ГЕРОЙ' : 'ДОБРО ПОЖАЛОВАТЬ, ПУТНИК';
+    cardTitle.textContent = awaitingCode ? 'Подтвердите почту' : isLoginMode ? 'Войти в мир' : 'Создать аккаунт';
+    submitBtnText.textContent = awaitingCode ? 'Подтвердить код' : isLoginMode ? 'Войти' : 'Создать аккаунт';
+    switchPrompt.hidden = awaitingCode;
+    switchPrompt.textContent = isLoginMode ? 'Ещё нет аккаунта?' : 'Уже есть аккаунт?';
+    switchModeBtn.textContent = awaitingCode ? 'Начать заново' : isLoginMode ? 'Создать' : 'Войти';
+  }
+
+  function resetForm(loginMode) {
+    isLoginMode = loginMode;
+    challenge = null;
+    passwordInput.value = '';
+    codeInput.value = '';
     apiStatus.hidden = true;
-
-    if (isLoginMode) {
-      nameGroup.style.display = 'none';
-      usernameInput.removeAttribute('required');
-      cardEyebrow.textContent = 'С ВОЗВРАЩЕНИЕМ, ГЕРОЙ';
-      cardTitle.textContent = 'Войти в мир';
-      submitBtnText.textContent = 'Войти';
-      switchPrompt.textContent = 'Ещё нет аккаунта?';
-      switchModeBtn.textContent = 'Создать';
-    } else {
-      nameGroup.style.display = 'flex';
-      usernameInput.setAttribute('required', 'true');
-      cardEyebrow.textContent = 'ДОБРО ПОЖАЛОВАТЬ, ПУТНИК';
-      cardTitle.textContent = 'Создать аккаунт';
-      submitBtnText.textContent = 'Создать аккаунт';
-      switchPrompt.textContent = 'Уже есть аккаунт?';
-      switchModeBtn.textContent = 'Войти';
-    }
+    renderForm();
   }
 
-  switchModeBtn.addEventListener('click', () => toggleAuthMode());
-  headerAuthBtn.addEventListener('click', () => toggleAuthMode(true));
-  if (new URLSearchParams(window.location.search).get('mode') === 'login') {
-    toggleAuthMode(true);
-  }
+  switchModeBtn.addEventListener('click', () => {
+    resetForm(challenge ? isLoginMode : !isLoginMode);
+    emailInput.focus();
+  });
+  headerAuthBtn.addEventListener('click', () => resetForm(true));
+  renderForm();
 
-  // Отправка формы через API
   authForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (submitBtn.disabled) return;
     apiStatus.hidden = true;
-    apiStatus.classList.remove('error');
-
+    const action = isLoginMode ? 'login' : 'register';
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+    const code = codeInput.value.trim();
 
-    // Простая валидация
-    if (!isLoginMode && username.length < 2) {
-      showStatus('Пожалуйста, укажите имя вашего героя (минимум 2 символа).', true);
+    if (challenge && !/^\d{6}$/.test(code)) {
+      showStatus('Введите шестизначный код из письма.', true);
       return;
     }
-    if (!email.includes('@')) {
-      showStatus('Введите корректный адрес электронной почты.', true);
-      return;
-    }
-    if (password.length < 8) {
-      showStatus('Пароль должен содержать не менее 8 символов.', true);
-      return;
-    }
+    if (!challenge && !validateCredentials(username, email, password)) return;
 
     submitBtn.disabled = true;
-    submitBtnText.textContent = 'Связь с Мастером...';
-
+    switchModeBtn.disabled = true;
+    headerAuthBtn.disabled = true;
+    submitBtnText.textContent = 'Подождите…';
     try {
-      await authenticateUser({ username, email, password }, isLoginMode);
-      if (isLoginMode) {
-        window.location.assign('/');
-        return;
+      if (challenge) {
+        await postAuth(`${action}/verify`, { challenge_id: challenge.challenge_id, code });
+        if (!isLoginMode) {
+          resetForm(true);
+          passwordInput.focus();
+          showStatus('Почта подтверждена. Войдите с вашим паролем.', false);
+          return;
+        }
+      } else {
+        challenge = await postAuth(action, { email, password, ...(isLoginMode ? {} : { nickname: username }) });
+        if (challenge) {
+          passwordInput.value = '';
+          renderForm();
+          codeInput.focus();
+          showStatus(`Код отправлен на ${email}. Он действует 10 минут.`, false);
+          return;
+        }
       }
-      toggleAuthMode(true);
-      passwordInput.value = '';
-      passwordInput.focus();
-      showStatus('Аккаунт создан. Войдите с вашим паролем.', false);
+      window.location.assign('/');
     } catch (error) {
       showStatus(error.message, true);
     } finally {
       submitBtn.disabled = false;
-      submitBtnText.textContent = isLoginMode ? 'Войти' : 'Создать аккаунт';
+      switchModeBtn.disabled = false;
+      headerAuthBtn.disabled = false;
+      renderForm();
     }
   });
+
+  function validateCredentials(username, email, password) {
+    if (!isLoginMode && username.length < 2) {
+      showStatus('Укажите имя длиной от 2 символов.', true);
+      return false;
+    }
+    if (!email || !emailInput.validity.valid) {
+      showStatus('Введите корректный адрес электронной почты.', true);
+      return false;
+    }
+    if ([...password].length < 8) {
+      showStatus('Пароль должен содержать не менее 8 символов.', true);
+      return false;
+    }
+    return true;
+  }
 
   function showStatus(message, isError) {
     apiStatus.textContent = message;

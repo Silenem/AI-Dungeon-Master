@@ -40,10 +40,18 @@ func run() error {
 	cache := redis.NewClient(redisOptions)
 	defer cache.Close()
 
-	app := &accountAPI{db: db, cache: cache, secureCookie: os.Getenv("COOKIE_SECURE") != "false"}
+	emailCodes, err := newEmailCodes(cache)
+	if err != nil {
+		return err
+	}
+	app := &accountAPI{db: db, cache: cache, emailCodes: emailCodes, secureCookie: os.Getenv("COOKIE_SECURE") != "false"}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/auth/register", app.register)
+	mux.HandleFunc("POST /api/auth/register/verify", app.verifyRegistration)
 	mux.HandleFunc("POST /api/auth/login", app.login)
+	mux.HandleFunc("POST /api/auth/login/verify", app.verifyLogin)
+	mux.HandleFunc("POST /api/auth/2fa", app.startEmailTwoFactorChange)
+	mux.HandleFunc("POST /api/auth/2fa/verify", app.verifyEmailTwoFactorChange)
 	mux.HandleFunc("DELETE /api/auth/session", app.logout)
 	mux.HandleFunc("GET /api/me", app.profile)
 	mux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +67,9 @@ func run() error {
 			}
 		}
 		var usersTableExists bool
-		dbErr := db.QueryRow(ctx, "SELECT to_regclass('public.users') IS NOT NULL").Scan(&usersTableExists)
+		dbErr := db.QueryRow(ctx, `SELECT COUNT(*) = 2 FROM information_schema.columns
+			WHERE table_schema = 'public' AND table_name = 'users'
+			AND column_name IN ('email_verified_at', 'email_2fa_enabled')`).Scan(&usersTableExists)
 		storage := map[string]bool{
 			"postgres":      dbErr == nil && usersTableExists,
 			"redis":         cache.Ping(ctx).Err() == nil,
