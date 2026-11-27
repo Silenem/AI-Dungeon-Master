@@ -1,5 +1,10 @@
 package domain
 
+import (
+	"errors"
+	"math/rand/v2"
+)
+
 // --- ТИПЫ ДОСПЕХОВ И РЕЖИМЫ 0 HP ---
 
 type ArmorType string
@@ -196,4 +201,76 @@ func (c *Character) MaxSpellSlots() int {
 		return 0
 	}
 	return 1 + int(c.Level) // На 1 уровне: 2 ячейки, далее +1 за уровень
+}
+
+// --- БРОСКИ КУБИКОВ, ПРОВЕРКИ И УРОН ---
+
+type CheckResult struct {
+	Roll        int  `json:"roll"`
+	Modifier    int  `json:"modifier"`
+	Total       int  `json:"total"`
+	DC          int  `json:"dc"`
+	Success     bool `json:"success"`
+	CritSuccess bool `json:"crit_success"`
+	CritFail    bool `json:"crit_fail"`
+}
+
+// RollDice бросает count кубиков с sides гранями и возвращает сумму.
+func RollDice(count, sides int) (int, error) {
+	if count <= 0 || sides <= 1 {
+		return 0, errors.New("invalid dice parameters")
+	}
+	total := 0
+	for range count {
+		total += rand.IntN(sides) + 1
+	}
+	return total, nil
+}
+
+// MakeCheck выполняет проверку d20 + модификатор характеристики против сложности DC.
+func (a Attributes) MakeCheck(stat int16, dc int) CheckResult {
+	roll := rand.IntN(20) + 1
+	mod := a.Modifier(stat)
+	total := roll + mod
+
+	critSuccess := roll == 20
+	critFail := roll == 1
+
+	success := total >= dc
+	if critSuccess {
+		success = true
+	} else if critFail {
+		success = false
+	}
+
+	return CheckResult{
+		Roll:        roll,
+		Modifier:    mod,
+		Total:       total,
+		DC:          dc,
+		Success:     success,
+		CritSuccess: critSuccess,
+		CritFail:    critFail,
+	}
+}
+
+// ApplyDamage применяет урон и возвращает новое значение HP и статус при падении до 0.
+func ApplyDamage(currentHP, damage int, mode ZeroHPMode) (newHP int, status string) {
+	if damage < 0 {
+		damage = 0
+	}
+	newHP = currentHP - damage
+	if newHP > 0 {
+		return newHP, "alive"
+	}
+
+	newHP = 0
+	switch mode {
+	case ZeroHPDeathSaves:
+		return newHP, "dying"
+	case ZeroHPDead:
+		return newHP, "dead"
+	default:
+		return newHP, "unconscious"
+	}
 }
